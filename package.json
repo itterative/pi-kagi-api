@@ -1,0 +1,11 @@
+{
+  "name": "pi-kagi-api",
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "dependencies": {
+    "@mariozechner/pi-coding-agent": "^0.55.1"
+  }
+}
