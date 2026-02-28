@@ -14,7 +14,7 @@ export default function (pi: ExtensionAPI) {
             );
 
             if (!token) {
-                ctx.ui.notify("Login cancelled", "warning");
+                ctx.ui.notify("pi-kagi-api: Login cancelled", "warning");
                 return;
             }
 

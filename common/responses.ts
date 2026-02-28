@@ -131,7 +131,7 @@ export async function handleKagiResponse<T>(
                     );
                 case 2:
                     throw new KagiError(
-                        "Operation failed: user credentials aren't valid",
+                        "Operation failed: user credentials aren't valid. The user should run the command /kagi-login in order to use the tools.",
                         result.error,
                     );
                 case 100:
