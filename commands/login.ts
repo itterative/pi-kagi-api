@@ -1,7 +1,7 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { AutocompleteItem } from "@mariozechner/pi-tui";
 
-import * as kagiConfig from "../common/config";
+import kagiConfig from "../common/config";
 
 export default function registerLogin(pi: ExtensionAPI) {
     pi.registerCommand("kagi-login", {
@@ -17,10 +17,10 @@ export default function registerLogin(pi: ExtensionAPI) {
                 return;
             }
 
-            let config = kagiConfig.loadWithDefault(ctx.cwd);
+            let config = kagiConfig.current ?? kagiConfig.default;
             config.token = token;
 
-            kagiConfig.save(ctx.cwd, config);
+            kagiConfig.save(config, ctx.cwd);
         },
     });
 }

@@ -1,14 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { KAGI_API_TOKEN, KAGI_CONFIG_PATH, KAGI_CONFIG_PATH_GLOBAL } from "./constants";
+import {
+    KAGI_API_TOKEN,
+    KAGI_CONFIG_PATH,
+    KAGI_CONFIG_PATH_GLOBAL,
+} from "./constants";
 
 export interface KagiConfig {
-    token: string
-}
-
-function localConfigPath(cwd: string): string {
-    return path.join(cwd, ".pi", "kagi-config.json");
+    token: string;
 }
 
 function tryLoad(path: string): KagiConfig | null {
@@ -23,58 +23,116 @@ function tryLoad(path: string): KagiConfig | null {
             return null;
         }
 
-        if (!data.token) {
+        if (!data.token && !KAGI_API_TOKEN) {
             return null;
         }
 
-        return data as KagiConfig;
+        return {
+            token: data.token ?? KAGI_API_TOKEN ?? "",
+        } as KagiConfig;
     } catch (e) {
         return null;
     }
 }
 
-export function load(cwd: string): KagiConfig {
-    if (KAGI_API_TOKEN) {
-        return {
-            token: KAGI_API_TOKEN,
-        }
-    }
+function findConfigLocations(cwd: string): string[] {
+    const locations: string[] = [];
 
-    let config: KagiConfig | null = null;
+    let currentFolder = cwd;
 
     if (KAGI_CONFIG_PATH) {
-        config = tryLoad(KAGI_CONFIG_PATH);
+        locations.push(KAGI_CONFIG_PATH);
     }
 
-    if (!config) {
-        config = tryLoad(localConfigPath(cwd));
+    for (let i = 0; i < 20; i++) {
+        if (!currentFolder) {
+            break;
+        }
+
+        const configPath = path.join(cwd, ".pi", "kagi-config.json");
+
+        try {
+            fs.accessSync(configPath, fs.constants.R_OK);
+
+            if (fs.existsSync(configPath)) {
+                locations.push(configPath);
+            }
+        } catch (e) {
+            break;
+        }
+
+        const parentFolder = path.join(cwd, "..");
+
+        if (parentFolder === currentFolder) {
+            break;
+        }
+
+        currentFolder = parentFolder;
     }
 
-    if (!config) {
-        config = tryLoad(KAGI_CONFIG_PATH_GLOBAL);
-    }
+    locations.push(KAGI_CONFIG_PATH_GLOBAL);
 
-    if (!config) {
-        throw new Error("could not load kagi config");
-    }
-
-    return config;
+    return locations;
 }
 
-export function loadConfigOrThrow(cwd: string) {
-    try {
-        return load(cwd);
-    } catch (e) {
-        throw new Error(
-            "Kagi token could not be retrieved. Please ask user to use /kagi-login command.",
-        );
-    }
-}
+let _config: KagiConfig | null = null;
 
-export function save(cwd: string, config: KagiConfig) {
-    if (!fs.existsSync(KAGI_CONFIG_PATH_GLOBAL)) {
-      fs.mkdirSync(path.dirname(KAGI_CONFIG_PATH_GLOBAL), { recursive: true, mode: 0o640 });
-    }
+export default {
+    get default(): KagiConfig {
+        return {
+            token: "",
+        };
+    },
 
-    fs.writeFileSync(KAGI_CONFIG_PATH_GLOBAL, JSON.stringify(config), { mode: 0o600 });
-}
+    get current(): KagiConfig | null {
+        if (_config === null) {
+            const locations = findConfigLocations(process.cwd());
+
+            if (locations.length === 0) {
+                return null;
+            }
+
+            _config = tryLoad(locations[0]);
+        }
+
+        return _config;
+    },
+
+    load(cwd: string) {
+        const locations = findConfigLocations(cwd);
+
+        let config: KagiConfig | null = null;
+        if (locations.length > 0) {
+            config = tryLoad(locations[0]);
+        }
+
+        if (config === null) {
+            throw new Error("could not load kagi config");
+        }
+
+        _config = config;
+        return _config;
+    },
+
+    save(config: KagiConfig, cwd?: string) {
+        cwd = cwd ?? process.cwd();
+        const locations = findConfigLocations(cwd);
+
+        const config_path =
+            locations[0] ?? KAGI_CONFIG_PATH ?? KAGI_CONFIG_PATH_GLOBAL;
+
+        if (!fs.existsSync(config_path)) {
+            fs.mkdirSync(path.dirname(config_path), {
+                recursive: true,
+                mode: 0o640,
+            });
+        }
+
+        fs.writeFileSync(config_path, JSON.stringify(config), {
+            mode: 0o600,
+        });
+
+        _config = config;
+        return _config;
+    },
+};

@@ -7,7 +7,8 @@ import type {
 import { Text } from "@mariozechner/pi-tui";
 
 import { KAGI_API_URL, KAGI_USER_AGENT } from "../common/constants";
-import { loadConfigOrThrow } from "../common/config";
+import kagiConfig from "../common/config";
+import type { KagiConfig } from "../common/config";
 import { KagiError } from "../common/errors";
 import {
     handleKagiResponse,
@@ -96,7 +97,15 @@ export default function registerUniversalSummarizer(pi: ExtensionAPI, enabled: b
                 };
             }
 
-            const config = loadConfigOrThrow(ctx.cwd);
+            let config: KagiConfig;
+
+            try {
+                config = kagiConfig.current ?? kagiConfig.load(ctx.cwd);
+            } catch (e) {
+                throw new Error(
+                    "Kagi token could not be retrieved. Please ask user to use /kagi-login command.",
+                );
+            }
 
             const url = params.url;
             const summary_type =

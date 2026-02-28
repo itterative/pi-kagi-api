@@ -7,7 +7,8 @@ import type {
 import { Text } from "@mariozechner/pi-tui";
 
 import { KAGI_API_URL, KAGI_USER_AGENT } from "../common/constants";
-import { loadConfigOrThrow } from "../common/config";
+import kagiConfig from "../common/config";
+import type { KagiConfig } from "../common/config";
 import { KagiError } from "../common/errors";
 import { handleKagiResponse, KagiFastGPTResponse } from "../common/responses";
 
@@ -21,7 +22,10 @@ Web search incurs incurs extra costs to the user and should be used sparingly.
 Pricing for FastGPT is a flat rate per-query: 1.5¢ per query ($15 USD per 1000 queries).
 `.trim();
 
-export default function registerFastGPT(pi: ExtensionAPI, enabled: boolean = false) {
+export default function registerFastGPT(
+    pi: ExtensionAPI,
+    enabled: boolean = false,
+) {
     if (!enabled) {
         return;
     }
@@ -55,7 +59,15 @@ export default function registerFastGPT(pi: ExtensionAPI, enabled: boolean = fal
                 };
             }
 
-            const config = loadConfigOrThrow(ctx.cwd);
+            let config: KagiConfig;
+
+            try {
+                config = kagiConfig.current ?? kagiConfig.load(ctx.cwd);
+            } catch (e) {
+                throw new Error(
+                    "Kagi token could not be retrieved. Please ask user to use /kagi-login command.",
+                );
+            }
 
             onUpdate?.({
                 content: [{ type: "text", text: "Fetching results..." }],
@@ -140,7 +152,9 @@ export default function registerFastGPT(pi: ExtensionAPI, enabled: boolean = fal
 
             if (result.details.result.references.length > 0) {
                 text += "\n\n#References\n";
-                text += result.details.result.references.map((r, i) => `${i + 1}. ${r.title} (${r.url})`);
+                text += result.details.result.references.map(
+                    (r, i) => `${i + 1}. ${r.title} (${r.url})`,
+                );
             }
 
             return new Text(text, 0, 0);
