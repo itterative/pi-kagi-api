@@ -6,7 +6,7 @@ import type {
 } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
 
-import { KAGI_API_URL } from "../common/constants";
+import { KAGI_API_URL, KAGI_USER_AGENT } from "../common/constants";
 import { loadConfigOrThrow } from "../common/config";
 import { KagiError } from "../common/errors";
 import { handleKagiResponse, KagiFastGPTResponse } from "../common/responses";
@@ -64,6 +64,7 @@ export default function (pi: ExtensionAPI) {
                     headers: {
                         Authorization: `Bot ${config.token}`,
                         "Content-Type": "application/json",
+                        "User-Agent": KAGI_USER_AGENT,
                     },
                     body: JSON.stringify({ query: params.query }),
                     signal,

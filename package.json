@@ -1,5 +1,7 @@
 {
   "name": "pi-kagi-api",
+  "version": "1.0.0",
+  "homepage": "https://github.com/itterative/pi-kagi-api",
   "pi": {
     "extensions": [
       "./index.ts"
