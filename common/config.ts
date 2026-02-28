@@ -9,6 +9,7 @@ import {
 
 export interface KagiConfig {
     token: string;
+    searchProvider: "fastgpt" | "enrichment";
 }
 
 function tryLoad(path: string): KagiConfig | null {
@@ -29,6 +30,7 @@ function tryLoad(path: string): KagiConfig | null {
 
         return {
             token: data.token ?? KAGI_API_TOKEN ?? "",
+            searchProvider: data.searchProvider ?? "fastgpt",
         } as KagiConfig;
     } catch (e) {
         return null;
@@ -81,7 +83,8 @@ export default {
     get default(): KagiConfig {
         return {
             token: "",
-        };
+            searchProvider: "fastgpt",
+        }
     },
 
     get current(): KagiConfig | null {
@@ -118,8 +121,7 @@ export default {
         cwd = cwd ?? process.cwd();
         const locations = findConfigLocations(cwd);
 
-        const config_path =
-            locations[0] ?? KAGI_CONFIG_PATH ?? KAGI_CONFIG_PATH_GLOBAL;
+        const config_path = locations[0] ?? KAGI_CONFIG_PATH ?? KAGI_CONFIG_PATH_GLOBAL;
 
         if (!fs.existsSync(config_path)) {
             fs.mkdirSync(path.dirname(config_path), {
