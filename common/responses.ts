@@ -33,12 +33,12 @@ export interface KagiFastGPTReference {
 export type KagiSearchResponse = (KagiSearchRelatedTerms | KagiSearchObject)[];
 
 export interface KagiSearchRelatedTerms {
-    t: 0;
+    t: 1;
     list: string[];
 }
 
 export interface KagiSearchObject {
-    t: 1;
+    t: 0;
     url: string;
     title: string;
     snippet?: string;
