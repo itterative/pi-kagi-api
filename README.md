@@ -32,4 +32,6 @@ As per docs, users with [Ultimate Plan](https://help.kagi.com/kagi/plans/ultimat
 
 ## References
 * https://help.kagi.com/kagi/api/fastgpt.html
+* https://help.kagi.com/kagi/api/enrich.html
+* https://help.kagi.com/kagi/api/search.html
 * https://help.kagi.com/kagi/api/summarizer.html
