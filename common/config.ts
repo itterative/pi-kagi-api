@@ -79,12 +79,16 @@ function findConfigLocations(cwd: string): string[] {
 
 let _config: KagiConfig | null = null;
 
+function defaultConfig(): KagiConfig {
+  return {
+      token: KAGI_API_TOKEN ?? "",
+      searchProvider: "fastgpt",
+  }
+}
+
 export default {
     get default(): KagiConfig {
-        return {
-            token: "",
-            searchProvider: "fastgpt",
-        }
+        return defaultConfig();
     },
 
     get current(): KagiConfig | null {
@@ -117,7 +121,7 @@ export default {
         return _config;
     },
 
-    save(config: KagiConfig, cwd?: string) {
+    save(config: Partial<KagiConfig>, cwd?: string) {
         cwd = cwd ?? process.cwd();
         const locations = findConfigLocations(cwd);
 
@@ -128,13 +132,42 @@ export default {
                 recursive: true,
                 mode: 0o640,
             });
+        } else if (!config.token) {
+            // load the token from disk
+
+            try {
+                const data = JSON.parse(fs.readFileSync(config_path, "utf-8"));
+
+                if (!data || typeof data !== "object") {
+                    throw new Error("bad config");
+                }
+
+                const dataToken = data.token;
+
+                if (typeof dataToken === "string") {
+                    config.token = dataToken;
+                }
+            } catch (e) {
+                // ignore
+            }
         }
 
-        fs.writeFileSync(config_path, JSON.stringify(config), {
+        // don't write env KAGI_API_TOKEN if set
+        if (KAGI_API_TOKEN && !config.token) {
+            config.token = "";
+        }
+
+        let newConfig: KagiConfig = _config ?? defaultConfig();
+        newConfig = Object.assign(newConfig, config);
+
+        fs.writeFileSync(config_path, JSON.stringify(newConfig), {
             mode: 0o600,
         });
 
-        _config = config;
+        _config = newConfig;
+        // override the token if we have the env KAGI_API_TOKEN set
+        _config.token = KAGI_API_TOKEN ?? _config.token;
+
         return _config;
     },
 };

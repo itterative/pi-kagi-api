@@ -17,10 +17,9 @@ export default function registerLogin(pi: ExtensionAPI) {
                 return;
             }
 
-            let config = kagiConfig.current ?? kagiConfig.default;
-            config.token = token;
-
-            kagiConfig.save(config, ctx.cwd);
+            kagiConfig.save({
+                token: token
+            }, ctx.cwd);
         },
     });
 }

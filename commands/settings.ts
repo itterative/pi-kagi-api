@@ -74,7 +74,9 @@ export default function registerSettings(pi: ExtensionAPI) {
                     return;
             }
 
-            kagiConfig.save(config, ctx.cwd);
+            kagiConfig.save({
+                searchProvider: config.searchProvider,
+            }, ctx.cwd);
         },
     });
 }
