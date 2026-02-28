@@ -41,7 +41,7 @@ Universal Summarizer incurs extra costs to the user and should be used sparingly
 Pricing for Universal Summarizer is $0.030 USD per 1,000 tokens processed.
 `.trim();
 
-export default function (pi: ExtensionAPI, enabled: boolean = false) {
+export default function registerUniversalSummarizer(pi: ExtensionAPI, enabled: boolean = false) {
     if (!enabled) {
         return;
     }

@@ -21,7 +21,7 @@ Web search incurs incurs extra costs to the user and should be used sparingly.
 Pricing for FastGPT is a flat rate per-query: 1.5¢ per query ($15 USD per 1000 queries).
 `.trim();
 
-export default function (pi: ExtensionAPI, enabled: boolean = false) {
+export default function registerFastGPT(pi: ExtensionAPI, enabled: boolean = false) {
     if (!enabled) {
         return;
     }
