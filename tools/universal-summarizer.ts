@@ -41,7 +41,11 @@ Universal Summarizer incurs extra costs to the user and should be used sparingly
 Pricing for Universal Summarizer is $0.030 USD per 1,000 tokens processed.
 `.trim();
 
-export default function (pi: ExtensionAPI) {
+export default function (pi: ExtensionAPI, enabled: boolean = false) {
+    if (!enabled) {
+        return;
+    }
+
     pi.registerTool({
         name: "universal-summarizer",
         label: "Kagi Universal Summarizer",
@@ -152,26 +156,31 @@ export default function (pi: ExtensionAPI) {
             }
         },
 
+        renderCall(args, theme) {
+            let text = theme.fg("toolTitle", theme.bold("universal-summarizer "));
+            text += theme.fg("muted", args.url);
+            return new Text(text, 0, 0);
+        },
         renderResult(result, { expanded, isPartial }, theme) {
             if (isPartial) {
-                return new Text(theme.fg("accent", "Summarizing..."));
+                return new Text(theme.fg("accent", "Summarizing..."), 0, 0);
             }
 
             if (result.details.cancelled) {
-                return new Text(theme.fg("muted", "Cancelled"));
+                return new Text(theme.fg("muted", "Cancelled"), 0, 0);
             }
 
             if (expanded || !result.details?.result) {
                 const content = result.content[0];
 
                 if (!content || content.type !== "text") {
-                    return new Text(theme.fg("muted", "No results."));
+                    return new Text(theme.fg("muted", "No results."), 0, 0);
                 } else {
-                    return new Text(content.text);
+                    return new Text(content.text, 0, 0);
                 }
             }
 
-            return new Text(result.details.result.output);
+            return new Text(result.details.result.output, 0, 0);
         },
     });
 }

@@ -21,7 +21,11 @@ Web search incurs incurs extra costs to the user and should be used sparingly.
 Pricing for FastGPT is a flat rate per-query: 1.5¢ per query ($15 USD per 1000 queries).
 `.trim();
 
-export default function (pi: ExtensionAPI) {
+export default function (pi: ExtensionAPI, enabled: boolean = false) {
+    if (!enabled) {
+        return;
+    }
+
     pi.registerTool({
         name: "web-search",
         label: "Kagi Web Search",
@@ -73,7 +77,7 @@ export default function (pi: ExtensionAPI) {
                 const [meta, result] =
                     await handleKagiResponse<KagiFastGPTResponse>(response);
 
-                let text = `<output>${result.output}</output>`;
+                let text = `<output>\n${result.output}\n</output>`;
 
                 for (const reference of result.references) {
                     text += `\n\n<reference>\n<title>${reference.title}</title>\n<url>${reference.url}</url>\n<snippet>\n${reference.snippet}\n</snippet>\n</reference>`;
@@ -108,26 +112,38 @@ export default function (pi: ExtensionAPI) {
             }
         },
 
+        renderCall(args, theme) {
+            let text = theme.fg("toolTitle", theme.bold("web-search "));
+            text += theme.fg("muted", args.query);
+            return new Text(text, 0, 0);
+        },
         renderResult(result, { expanded, isPartial }, theme) {
             if (isPartial) {
-                return new Text(theme.fg("accent", "Searching..."));
+                return new Text(theme.fg("accent", "Searching..."), 0, 0);
             }
 
             if (result.details.cancelled) {
-                return new Text(theme.fg("muted", "Cancelled"));
+                return new Text(theme.fg("muted", "Cancelled"), 0, 0);
             }
 
             if (expanded || !result.details?.result) {
                 const content = result.content[0];
 
                 if (!content || content.type !== "text") {
-                    return new Text(theme.fg("muted", "No results."));
+                    return new Text(theme.fg("muted", "No results."), 0, 0);
                 } else {
-                    return new Text(content.text);
+                    return new Text(content.text, 0, 0);
                 }
             }
 
-            return new Text(result.details.result.output);
+            let text = result.details.result.output;
+
+            if (result.details.result.references.length > 0) {
+                text += "\n\n#References\n";
+                text += result.details.result.references.map((r, i) => `${i + 1}. ${r.title} (${r.url})`);
+            }
+
+            return new Text(text, 0, 0);
         },
     });
 }
