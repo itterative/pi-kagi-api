@@ -9,7 +9,7 @@ import {
 
 export interface KagiConfig {
     token: string;
-    searchProvider: "fastgpt" | "enrichment";
+    searchProvider: "fastgpt" | "search" | "enrichment";
 }
 
 function tryLoad(path: string): KagiConfig | null {

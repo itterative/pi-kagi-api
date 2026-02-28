@@ -9,7 +9,7 @@ export default function registerSettings(pi: ExtensionAPI) {
             value: "search",
             label: "search",
             description:
-                "Sets the search API provider (choices: fastgpt, enrichment)",
+                "Sets the search API provider (choices: fastgpt, search, enrichment)",
         },
     ];
 
@@ -41,6 +41,8 @@ export default function registerSettings(pi: ExtensionAPI) {
                     "Available: fastgpt (uses FastGPT model from Kagi for giving an overview of the search results)\n";
                 text +=
                     "           enrichment (searches the Small Web from Kagi; cheaper option, but results are very limited)\n";
+                text +=
+                    "           search (uses the Search API from Kagi; currently in closed beta)\n";
 
                 ctx.ui.notify(text, "info");
                 return;
@@ -50,7 +52,7 @@ export default function registerSettings(pi: ExtensionAPI) {
                 case "search":
                     const choice = await ctx.ui.select(
                         "Enter your search API provider:",
-                        ["fastgpt", "enrichment"],
+                        ["fastgpt", "search", "enrichment"],
                     );
 
                     if (!choice) {
@@ -58,7 +60,7 @@ export default function registerSettings(pi: ExtensionAPI) {
                         break;
                     }
 
-                    config.searchProvider = choice as "fastgpt" | "enrichment";
+                    config.searchProvider = choice as "fastgpt" | "search" | "enrichment";
 
                     ctx.ui.notify(
                         "pi-kagi-api: Updating the search provider requires a /reload",
