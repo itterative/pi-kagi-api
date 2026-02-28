@@ -13,5 +13,5 @@ export default function registerTools(pi: ExtensionAPI) {
   registerSearch(pi, config?.searchProvider === "search")
   registerEnrichment(pi, config?.searchProvider === "enrichment");
   registerFastGPT(pi, config === null || config.searchProvider === "fastgpt");
-  registerUniversalSummarizer(pi);
+  registerUniversalSummarizer(pi, true);
 }
